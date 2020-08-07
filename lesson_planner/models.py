@@ -9,8 +9,17 @@ class Lesson(models.Model):
         WEEKLY = "weekly"
         MONTHLY = "monthly"
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="user", on_delete=models.CASCADE)
-    students = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="students", blank=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        related_name = "user", 
+        on_delete = models.CASCADE
+    )
+    students = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, 
+        related_name = "students", 
+        blank = True
+    )
+
     repeat = models.CharField(
         choices = RepeatOptions.choices, 
         default = RepeatOptions.NEVER,

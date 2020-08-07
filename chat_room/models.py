@@ -14,11 +14,11 @@ class Message(models.Model):
     
     msg_type = models.CharField(
         choices = Test.choices, 
-        max_length = 10,
+        max_length = 7,
     )
 
     text = models.TextField()
     chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE)
-    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     date_sent = models.DateTimeField(auto_now_add=True)
