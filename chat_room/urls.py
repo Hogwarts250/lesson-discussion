@@ -3,7 +3,7 @@ from django.urls import path
 
 from . import views
 
-appname = "chat_room"
+app_name = "chat_room"
 urlpatterns = [
     path("", views.index, name="index"),
 ]

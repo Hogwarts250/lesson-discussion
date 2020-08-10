@@ -1,0 +1,17 @@
+{% extends "lesson_planner/base.html" %} {% load bootstrap4 %}
+
+{% block content %}
+{{ user.username }}
+<br>
+<form action="{% url 'lesson_planner:index' %}" method="POST" class="form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input class="btn" type="submit" value="Submit">
+</form>
+
+{% if user.is_authenticated %}
+
+{% else %}
+
+{% endif %}
+{% endblock content %}

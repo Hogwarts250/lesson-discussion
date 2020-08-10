@@ -15,9 +15,9 @@ class Message(models.Model):
     msg_type = models.CharField(
         choices = Test.choices, 
         max_length = 7,
-    )
+    )   
 
-    text = models.TextField()
+    text = models.TextField(null=True, blank=True)
     chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
