@@ -243,3 +243,10 @@ dist
 ### VS Code ###
 # Workspace settings
 .code-workspace
+
+### VS Code ###
+# Settings and configuration files
+.vscode/
+
+# Workplace file
+*.code-workspace
