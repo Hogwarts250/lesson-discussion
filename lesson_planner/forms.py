@@ -29,7 +29,7 @@ class TransactionForm(forms.ModelForm):
         model = Transaction
         fields = ["buyer", "amount"]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, user_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["buyer"].queryset = User.objects.all()
+        self.fields["buyer"].queryset = User.objects.exclude(id=user_id)
         

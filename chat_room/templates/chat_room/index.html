@@ -1,0 +1,8 @@
+{% extends "lesson_planner/base.html" %} {% load bootstrap4 %}
+
+{% block content %}
+{% for user in users %}
+<br>
+<a href="{% url 'chat_room:room' user.id %}">{{ user.username }}</a>
+{% endfor %}
+{% endblock content %}

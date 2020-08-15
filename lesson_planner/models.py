@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.conf import settings
 
@@ -11,12 +13,15 @@ class Lesson(models.Model):
         WEEKLY = "weekly"
         MONTHLY = "monthly"
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     label = models.CharField(max_length=50, null=True)
 
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        related_name = "user", 
+    teacher = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
         on_delete = models.CASCADE,
+        related_name = "teacher", 
+        null = True,
     )
     students = models.ManyToManyField(
         settings.AUTH_USER_MODEL, 
@@ -35,38 +40,57 @@ class Lesson(models.Model):
 
     date = models.DateField()
 
+    datetime_created = models.DateTimeField(auto_now_add=True)
+
+
 class TransactionRecord(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
 
+
 class Transaction(models.Model):
-    STATUS = Choices("pending", "confirmed", "denied")
-
-    def set_status_confirmed(self):
-        self.status = STATUS.confirmed
-
-    def set_status_denied(self):
-        self.status = STATUS.denied
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     buyer = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
-        related_name = "buyer", 
         on_delete = models.CASCADE,
+        related_name = "buyer", 
         null = True,
     )
     seller = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
-        related_name = "seller", 
         on_delete = models.CASCADE,
+        related_name = "seller", 
+        null = True
+    )
+    last_sent_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete = models.CASCADE,
+        related_name = "sent_by",
         null = True
     )
     transaction_record = models.ForeignKey(TransactionRecord, on_delete=models.CASCADE)
 
     amount = models.DecimalField(max_digits=12, decimal_places=2, null=True)
 
+    STATUS = Choices("pending", "confirmed", "denied")
     status = fields.StatusField(choices=STATUS, default=STATUS.pending, max_length=10)
-    date_sent = models.DateTimeField(auto_now_add=True)
+
+    datetime_created = models.DateTimeField(auto_now_add=True)
     confirmed_denied_datetime = fields.MonitorField(
         monitor = "status", 
         when = [STATUS.confirmed, STATUS.denied],
         null = True
     )
+
+    def set_status_confirmed(self):
+        self.status = self.STATUS.confirmed
+        self.save()
+
+    def set_status_denied(self):
+        self.status = self.STATUS.denied
+        self.save()
+
+    def get_other_user(self, user):
+        return self.seller if user == self.buyer else self.buyer

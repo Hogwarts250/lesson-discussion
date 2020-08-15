@@ -1,0 +1,11 @@
+{% extends "lesson_planner/base.html" %} {% load bootstrap4 %}
+
+{% block content %}
+<form action="{% url 'lesson_planner:edit_transaction' transaction_id %}" method="POST">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input class="btn" type="submit" name="edit_transaction" value="Edit">
+  <input class="btn" type="submit" name="confirm_transaction" value="Confirm">
+  <input class="btn" type="submit" name="deny_transaction" value="Deny">
+</form>
+{% endblock content %}

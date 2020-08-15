@@ -1,17 +1,20 @@
 {% extends "lesson_planner/base.html" %} {% load bootstrap4 %}
 
 {% block content %}
-{{ user.username }}
-<br>
-<form action="{% url 'lesson_planner:index' %}" method="POST" class="form">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input class="btn" type="submit" value="Submit">
-</form>
-
 {% if user.is_authenticated %}
-
+<a href="{% url 'users:log_out' %}">log out</a>
+<br>
+<a href="{% url 'chat_room:index' %}">chat rooms</a>
+<div class="card">
+  <form action="{% url 'lesson_planner:index' %}" method="POST" class="form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <input class="btn" type="submit" value="Submit">
+  </form>
+</div>
 {% else %}
-
+<a href="{% url 'users:sign_up' %}">sign up</a>
+<br>
+<a href="{% url 'users:login' %}">login</a>
 {% endif %}
 {% endblock content %}
