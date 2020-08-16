@@ -1,7 +1,7 @@
-{% extends "lesson_planner/base.html" %} {% load bootstrap4 %}
+{% extends "transactions/base.html" %} {% load bootstrap4 %}
 
 {% block content %}
-<a href="{% url 'lesson_planner:index' %}">index</a>
+<a href="{% url 'transactions:index' %}">index</a>
 {% for user in users %}
 <br>
 <a href="{% url 'chat_room:room' user.id %}">{{ user.username }}</a>
@@ -14,7 +14,7 @@
   <p>sent by: {{ transaction.last_sent_by }}</p>
   {% if transaction.status == "pending" %}
     {% if transaction.last_sent_by != user %}
-    <a href="{% url 'lesson_planner:edit_transaction' transaction.id %}">confirm or deny</a>
+    <a href="{% url 'transactions:edit_transaction' transaction.id %}">confirm or deny</a>
     {% else %}
     <p>waiting for confirmation...</p>
     {% endif %}

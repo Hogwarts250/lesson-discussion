@@ -1,6 +1,7 @@
-{% extends "lesson_planner/base.html" %} {% load bootstrap4 %}
+{% extends "transactions/base.html" %} {% load bootstrap4 %}
 
 {% block content %}
+<a href="{% url 'transactions:index' %}">index</a>
 {% for user in users %}
 <br>
 <a href="{% url 'chat_room:room' user.id %}">{{ user.username }}</a>

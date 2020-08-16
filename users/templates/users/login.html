@@ -1,10 +1,10 @@
-{% extends "lesson_planner/base.html" %} {% load bootstrap4 %}
+{% extends "transactions/base.html" %} {% load bootstrap4 %}
 
 {% block content %}
 <form method="POST" action="{% url 'users:login' %}" class="form">
     {% csrf_token %} 
     {{ form.as_p }}
     <input class="btn" type="submit" value="Submit">
-    <input type="hidden" name="next" value="{% url 'lesson_planner:index' %}" />
+    <input type="hidden" name="next" value="{% url 'transactions:index' %}" />
   </form>
 {% endblock content %}

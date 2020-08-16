@@ -1,4 +1,4 @@
-{% extends "lesson_planner/base.html" %} {% load bootstrap4 %}
+{% extends "transactions/base.html" %} {% load bootstrap4 %}
 
 {% block content %}
 {% if user.is_authenticated %}
@@ -6,7 +6,7 @@
 <br>
 <a href="{% url 'chat_room:index' %}">chat rooms</a>
 <div class="card">
-  <form action="{% url 'lesson_planner:index' %}" method="POST" class="form">
+  <form action="{% url 'transactions:index' %}" method="POST" class="form">
       {% csrf_token %}
       {{ form.as_p }}
       <input class="btn" type="submit" value="Submit">

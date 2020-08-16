@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     # user-created apps
     "chat_room",
     "lesson_planner",
+    "transactions",
     "users",
 ]
 

@@ -22,7 +22,7 @@ def sign_up(request):
             user = authenticate(username=user.username, password=form.cleaned_data["password1"])
             login(request, user)
 
-            return HttpResponseRedirect(reverse("lesson_planner:index"))
+            return HttpResponseRedirect(reverse("transactions:index"))
 
     else:
         form = UserCreationForm()
@@ -34,4 +34,4 @@ def sign_up(request):
 def log_out(request):
     logout(request)
 
-    return HttpResponseRedirect(reverse("lesson_planner:index"))
+    return HttpResponseRedirect(reverse("transactions:index"))

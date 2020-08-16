@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from lesson_planner.models import TransactionRecord, Transaction
+from transactions.models import TransactionRecord, Transaction
 from users.models import User
 
 # Create your views here.
