@@ -1,9 +1,8 @@
 import uuid
+from model_utils import fields, Choices
 
 from django.db import models
 from django.conf import settings
-
-from model_utils import fields, Choices
 
 # Create your models here.
 class Lesson(models.Model):
@@ -14,30 +13,53 @@ class Lesson(models.Model):
         MONTHLY = "monthly"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    datetime_created = models.DateTimeField(auto_now_add=True)
 
-    label = models.CharField(max_length=50, null=True)
+    name = models.CharField(max_length=50, null=True)
 
     teacher = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete = models.CASCADE,
-        related_name = "teacher", 
-        null = True,
+        on_delete=models.CASCADE,
+        related_name="teacher",
+        null=True,
     )
     students = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, 
-        related_name = "students", 
-        blank = True,
+        settings.AUTH_USER_MODEL,
+        related_name="students",
     )
 
-    repeat = models.CharField(
-        choices = RepeatChoices.choices, 
-        default = RepeatChoices.NEVER,
-        max_length = 7,
-    )
+    lesson_datetime = models.DateTimeField(null=True)
+    length = models.DurationField(null=True)
 
-    length = models.DurationField(null=True, blank=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
 
-    date = models.DateField()
+    repeat = models.CharField(
+        choices=RepeatChoices.choices,
+        default=RepeatChoices.NEVER,
+        max_length=7,
+    )
+    # end date is inclusive
+    end_date = models.DateField(null=True, blank=True)
 
-    datetime_created = models.DateTimeField(auto_now_add=True)
+
+class StudentStatus(models.Model):
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True)
+
+    STATUS = Choices("pending", "confirmed", "denied")
+    status = fields.StatusField(
+        choices=STATUS, default=STATUS.pending, max_length=10)
+
+    confirmed_denied_datetime = fields.MonitorField(
+        monitor="status",
+        when=[STATUS.confirmed, STATUS.denied],
+        null=True
+    )
+
+    def set_status_confirmed(self):
+        self.status = self.STATUS.confirmed
+        self.save()
+
+    def set_status_denied(self):
+        self.status = self.STATUS.denied
+        self.save()

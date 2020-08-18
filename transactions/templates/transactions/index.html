@@ -5,6 +5,8 @@
 <a href="{% url 'users:log_out' %}">log out</a>
 <br>
 <a href="{% url 'chat_room:index' %}">chat rooms</a>
+<br>
+<a href="{% url 'lesson_planner:index' %}">lesson planner</a>
 <div class="card">
   <form action="{% url 'transactions:index' %}" method="POST" class="form">
       {% csrf_token %}
