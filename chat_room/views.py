@@ -17,7 +17,7 @@ def room(request, user_id):
     users = User.objects.filter(transactionrecord__in=user_transaction_records).exclude(id=request.user.id)
 
     transaction_record = user_transaction_records.filter(users__id=user_id)
-    transactions = Transaction.objects.filter(transaction_record=transaction_record[0])
+    transactions = Transaction.objects.filter(transaction_record=transaction_record[0]).order_by("datetime_created").reverse()
 
     context = {"users": users, "transactions": transactions}
 

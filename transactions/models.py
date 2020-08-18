@@ -1,9 +1,10 @@
 import uuid
+from model_utils import fields, Choices
 
 from django.db import models
 from django.conf import settings
 
-from model_utils import fields, Choices
+from lesson_planner.models import Lesson
 
 # Create your models here.
 class TransactionRecord(models.Model):
@@ -34,10 +35,12 @@ class Transaction(models.Model):
         related_name="sent_by",
         null=True
     )
-    transaction_record = models.ForeignKey(
-        TransactionRecord, on_delete=models.CASCADE)
+    transaction_record = models.ForeignKey(TransactionRecord, on_delete=models.CASCADE)
 
     amount = models.DecimalField(max_digits=12, decimal_places=2, null=True)
+    note = models.TextField(null=True, blank=True)
+
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, blank=True)
 
     STATUS = Choices("pending", "confirmed", "denied")
     status = fields.StatusField(
