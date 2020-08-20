@@ -3,6 +3,7 @@ from model_utils import fields, Choices
 
 from django.db import models
 from django.conf import settings
+from django.core import validators
 
 from lesson_planner.models import Lesson
 
@@ -14,19 +15,23 @@ class TransactionRecord(models.Model):
 
 
 class Transaction(models.Model):
+    class SendRequestChoices(models.TextChoices):
+        SEND = "send"
+        REQUEST = "request"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     datetime_created = models.DateTimeField(auto_now_add=True)
 
-    buyer = models.ForeignKey(
+    sender = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="buyer",
+        related_name="initial_sender",
         null=True,
     )
-    seller = models.ForeignKey(
+    receiver = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="seller",
+        related_name="initial_receiver",
         null=True
     )
     last_sent_by = models.ForeignKey(
@@ -37,15 +42,23 @@ class Transaction(models.Model):
     )
     transaction_record = models.ForeignKey(TransactionRecord, on_delete=models.CASCADE)
 
-    amount = models.DecimalField(max_digits=12, decimal_places=2, null=True)
+    send_request = models.CharField(
+        choices=SendRequestChoices.choices,
+        default=SendRequestChoices.REQUEST,
+        max_length=7,
+    )
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[validators.MinValueValidator(0.01)],
+        null=True
+    )
     note = models.TextField(null=True, blank=True)
 
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, blank=True)
 
     STATUS = Choices("pending", "confirmed", "denied")
-    status = fields.StatusField(
-        choices=STATUS, default=STATUS.pending, max_length=10)
-
+    status = fields.StatusField(choices=STATUS, default=STATUS.pending, max_length=10)
     confirmed_denied_datetime = fields.MonitorField(
         monitor="status",
         when=[STATUS.confirmed, STATUS.denied],
@@ -61,4 +74,4 @@ class Transaction(models.Model):
         self.save()
 
     def get_other_user(self, user):
-        return self.seller if user == self.buyer else self.buyer
+        return self.initial_receiver if user == self.initial_sender else self.initial_sender

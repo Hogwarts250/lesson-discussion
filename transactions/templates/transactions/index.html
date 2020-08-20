@@ -3,17 +3,90 @@
 {% block content %}
 {% if user.is_authenticated %}
 <a href="{% url 'users:log_out' %}">log out</a>
-<br>
 <a href="{% url 'chat_room:index' %}">chat rooms</a>
+<a href="{% url 'lesson_planner:index' %}">calendar</a>
+<a href="{% url 'transactions:create_transaction' %}">create transaction</a>
 <br>
-<a href="{% url 'lesson_planner:index' %}">lesson planner</a>
+{% if pending_transactions %}
+{% for transaction in pending_transactions %}
 <div class="card">
-  <form action="{% url 'transactions:index' %}" method="POST" class="form">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <input class="btn" type="submit" value="Submit">
-  </form>
+  <div class="card-body">
+    <div class="card-title">
+      <h3>${{ transaction.amount }}</h3>
+    </div>
+    <div class="card-text">
+      <p>type: {{ transaction.send_request }}</p>
+      {% if transaction.note %}
+      <p>note:</p>
+      <div class="card">
+        <p> {{ transaction.note|escape|linebreaks }}</p>
+      </div>
+      {% endif %}
+      {% if transaction.status == "pending" %}
+        {% if transaction.last_sent_by != user %}
+        <a href="{% url 'transactions:edit_transaction' transaction.id %}">confirm or deny</a>
+        {% else %}
+        <p>waiting for confirmation...</p>
+        {% endif %}
+      {% elif transaction.status == "confirmed" %}
+      <p>confirmed.</p>
+      {% else %}
+      <p>denied.</p>
+      {% endif %}
+    </div>
+  </div>
 </div>
+{% endfor %}
+{% else %}
+<p>no transactions awaiting confirmation</p>
+{% endif %}
+
+{% if lessons %}
+{% for lesson in lessons %}
+<div class="card">
+  <div class="card-body">
+    <div class="card-title">
+      <h3>{{ lesson.name }}</h3>
+    </div>
+    <div class="card-text">
+      <p>teacher: {{ lesson.teacher }}</p>
+      <p>students: </p>
+      <ul>
+        {% for student in lesson.students.all %}
+        <li>
+          <p>{{ student.username }}</p>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <p>date and time: {{ lesson.lesson_datetime }}</p>
+
+      {% if lesson.amount %}
+      <p>amount: ${{ lesson.amount }} / student</p>
+      {% endif %}
+
+      <p>repeat: {{ lesson.repeat }}</p>
+      {% if lesson.repeat != lesson.RepeatChoices.NEVER %}
+      <p>start date: {{ lesson.start_date}}</p>
+      <p>end date: {{ lesson.end_date }}</p>
+      {% endif %}
+
+      <!-- TODO: fix action url -->
+      {% if user == lesson.teacher %}
+      <form action="{% url 'lesson_planner:index' lesson.id %}" method="POST">
+        {% csrf_token %}
+        <input class="btn" type="submit" name="confirm_lesson" value="Confirm">
+        <input class="btn" type="submit" name="deny_lesson" value="Deny">
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<p>no upcoming lessons</p>
+{% endif %}
+
 {% else %}
 <a href="{% url 'users:sign_up' %}">sign up</a>
 <br>

@@ -6,4 +6,5 @@
 <br>
 <a href="{% url 'chat_room:room' user.id %}">{{ user.username }}</a>
 {% endfor %}
+{% block room %} {% endblock %}
 {% endblock content %}
