@@ -4,7 +4,50 @@
 <a href="{% url 'transactions:index' %}">index</a>
 <br>
 <a href="{% url 'lesson_planner:create_lesson' %}">create_lesson</a>
-{% for lesson in lessons %}
+<br>
+<a href="{% url 'lesson_planner:request_lesson' %}">request_lesson</a>
+{% if requested_lessons %}
+<p>requested lessons</p>
+{% for lesson in requested_lessons %}
+<div class="card">
+  <p>{{ lesson.name }}</p>
+
+  <p>teacher: {{ lesson.teacher }}</p>
+  <p>students: </p>
+  <ul>
+    {% for student in lesson.students.all %}
+    <li>
+      <p>{{ student.username }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+
+  <p>date and time: {{ lesson.lesson_datetime }}</p>
+
+  {% if lesson.amount %}
+  <p>amount: ${{ lesson.amount }} / student</p>
+  {% endif %}
+
+  <p>repeat: {{ lesson.repeat }}</p>
+  {% if lesson.repeat != lesson.RepeatChoices.NEVER %}
+  <p>start date: {{ lesson.start_date}}</p>
+  <p>end date: {{ lesson.end_date }}</p>
+  {% endif %}
+
+  {% if user == lesson.teacher %}
+  <form action="{% url 'lesson_planner:index' lesson.id %}" method="POST">
+    {% csrf_token %}
+    <input class="btn" type="submit" name="confirm_lesson" value="Confirm">
+    <input class="btn" type="submit" name="deny_lesson" value="Deny">
+  </form>
+  {% endif %}
+</div>
+{% endfor %}
+<br>
+{% endif %}
+{% if created_lessons %}
+<p>created lessons</p>
+{% for lesson in created_lessons %}
 <div class="card">
   <p>{{ lesson.name }}</p>
 
@@ -13,13 +56,12 @@
   <ul>
     {% for student_status in lesson.studentstatus_set.all %}
     <li>
-      <!-- TODO: Add confirm and deny buttons (similar to transaction) -->
       <p>{{ student_status.student.username }} 
         {% if student_status.status == "pending" and student_status.student == user %}
         <form action="{% url 'lesson_planner:index' student_status.id %}" method="POST">
           {% csrf_token %}
-          <input class="btn" type="submit" name="confirm_lesson" value="Confirm">
-          <input class="btn" type="submit" name="deny_lesson" value="Deny">
+          <input class="btn" type="submit" name="confirm_student" value="Confirm">
+          <input class="btn" type="submit" name="deny_student" value="Deny">
         </form>
         {% else %}
         <small>{{ student_status.status }}</small>
@@ -37,9 +79,9 @@
   <div class="container">
     {% for transaction in lesson.transaction_set.all %}
     <div class="card">
-      <p>student: {{ transaction.buyer }} </p>
+      <p>student: {{ transaction.receiver }} </p>
       {% if transaction.status == "pending" %}
-        {% if user == transaction.buyer %}
+        {% if user == transaction.receiver %}
         <form action="{% url 'lesson_planner:index' transaction.id %}" method="POST">
           {% csrf_token %}
           <input class="btn" type="submit" name="confirm_transaction" value="Confirm">
@@ -65,4 +107,5 @@
   {% endif %}
 </div>
 {% endfor %}
+{% endif %}
 {% endblock content %}
