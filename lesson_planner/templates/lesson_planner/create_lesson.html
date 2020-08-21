@@ -1,7 +1,6 @@
 {% extends "transactions/base.html" %} {% load bootstrap4 %}
 
 {% block content %}
-<a href="{% url 'transactions:index' %}">index</a>
 <form action="{% url 'lesson_planner:create_lesson' %}" method="POST" class="form">
   {% csrf_token %}
   {{ form.as_p }}

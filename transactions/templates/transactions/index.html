@@ -1,12 +1,7 @@
-{% extends "transactions/base.html" %} {% load bootstrap4 %}
+{% extends "transactions/base.html" %} {% load bootstrap4 %} {% load static %}
 
 {% block content %}
 {% if user.is_authenticated %}
-<a href="{% url 'users:log_out' %}">log out</a>
-<a href="{% url 'chat_room:index' %}">chat rooms</a>
-<a href="{% url 'lesson_planner:index' %}">calendar</a>
-<a href="{% url 'transactions:create_transaction' %}">create transaction</a>
-<br>
 {% if pending_transactions %}
 {% for transaction in pending_transactions %}
 <div class="card">
@@ -49,7 +44,9 @@
       <h3>{{ lesson.name }}</h3>
     </div>
     <div class="card-text">
+      {% if user != lesson.teacher %}
       <p>teacher: {{ lesson.teacher }}</p>
+      {% endif %}
       <p>students: </p>
       <ul>
         {% for student in lesson.students.all %}
@@ -69,15 +66,6 @@
       {% if lesson.repeat != lesson.RepeatChoices.NEVER %}
       <p>start date: {{ lesson.start_date}}</p>
       <p>end date: {{ lesson.end_date }}</p>
-      {% endif %}
-
-      <!-- TODO: fix action url -->
-      {% if user == lesson.teacher %}
-      <form action="{% url 'lesson_planner:index' lesson.id %}" method="POST">
-        {% csrf_token %}
-        <input class="btn" type="submit" name="confirm_lesson" value="Confirm">
-        <input class="btn" type="submit" name="deny_lesson" value="Deny">
-      </form>
       {% endif %}
     </div>
   </div>

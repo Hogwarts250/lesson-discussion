@@ -1,8 +1,6 @@
 {% extends "transactions/base.html" %} {% load bootstrap4 %}
 
 {% block content %}
-<a href="{% url 'transactions:index' %}">index</a>
-<br>
 <a href="{% url 'lesson_planner:create_lesson' %}">create_lesson</a>
 <br>
 <a href="{% url 'lesson_planner:request_lesson' %}">request_lesson</a>
@@ -32,14 +30,6 @@
   {% if lesson.repeat != lesson.RepeatChoices.NEVER %}
   <p>start date: {{ lesson.start_date}}</p>
   <p>end date: {{ lesson.end_date }}</p>
-  {% endif %}
-
-  {% if user == lesson.teacher %}
-  <form action="{% url 'lesson_planner:index' lesson.id %}" method="POST">
-    {% csrf_token %}
-    <input class="btn" type="submit" name="confirm_lesson" value="Confirm">
-    <input class="btn" type="submit" name="deny_lesson" value="Deny">
-  </form>
   {% endif %}
 </div>
 {% endfor %}
