@@ -2,9 +2,9 @@
 
 {% block content %}
 <form method="POST" action="{% url 'users:login' %}" class="form">
-    {% csrf_token %} 
-    {{ form.as_p }}
-    <input class="btn" type="submit" value="Submit">
-    <input type="hidden" name="next" value="{% url 'transactions:index' %}" />
+  {% csrf_token %} 
+  {% bootstrap_form form %}
+  <input class="btn" type="submit" value="Submit">
+  <input type="hidden" name="next" value="{% url 'transactions:index' %}" />
   </form>
 {% endblock content %}

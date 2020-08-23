@@ -1,11 +1,11 @@
 {% extends "transactions/base.html" %} {% load bootstrap4 %}
 
 {% block content %}
-<div class="card">
-  <form action="{% url 'transactions:index' %}" method="POST" class="form">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <input class="btn" type="submit" value="Submit">
+<div class="card p-4">
+  <form action="{% url 'transactions:create_transaction' %}" method="POST" class="form">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <input class="btn btn-outline-success" type="submit" value="Submit">
   </form>
 </div>
 {% endblock content %}
