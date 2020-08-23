@@ -7,33 +7,45 @@
 {% if requested_lessons %}
 <p>requested lessons</p>
 {% for lesson in requested_lessons %}
-<div class="card">
-  <p>{{ lesson.name }}</p>
+<div class="pb-2">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <h3>{{ lesson.name }}</h3>
+      </div>
+      <div class="card-subtitle">
+        <h6>{{ lesson.lesson_datetime.date }} at {{ lesson.lesson_datetime.time }}</h6>
+      </div>
+    </div>
+    <div class="card-body py-2">
+      <div class="card-text">
+        <p>teacher: {{ lesson.teacher }}</p>
+        <p class="mb-1">other students: </p>
+        <ul class="mb-0">
+          {% for student in lesson.students.all %}
+          <li>
+            <p>{{ student.username }}</p>
+          </li>
+          {% endfor %}
+        </ul>
+        {% if lesson.amount %}
+        <p>amount: ${{ lesson.amount }} / student</p>
+        {% endif %}
 
-  <p>teacher: {{ lesson.teacher }}</p>
-  <p>students: </p>
-  <ul>
-    {% for student in lesson.students.all %}
-    <li>
-      <p>{{ student.username }}</p>
-    </li>
-    {% endfor %}
-  </ul>
+        {% if lesson.repeat != lesson.RepeatChoices.NEVER %}
+        <p>repeat: {{ lesson.repeat }}</p>
+        <p>start date: {{ lesson.start_date}}</p>
+        <p>end date: {{ lesson.end_date }}</p>
+        {% endif %}
 
-  <p>date and time: {{ lesson.lesson_datetime }}</p>
-
-  {% if lesson.amount %}
-  <p>amount: ${{ lesson.amount }} / student</p>
-  {% endif %}
-
-  <p>repeat: {{ lesson.repeat }}</p>
-  {% if lesson.repeat != lesson.RepeatChoices.NEVER %}
-  <p>start date: {{ lesson.start_date}}</p>
-  <p>end date: {{ lesson.end_date }}</p>
-  {% endif %}
+        <!-- TODO -->
+        {% if user == lesson.teacher %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
 {% endfor %}
-<br>
 {% endif %}
 {% if created_lessons %}
 <p>created lessons</p>

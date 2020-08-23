@@ -2,82 +2,125 @@
 
 {% block content %}
 {% if user.is_authenticated %}
-{% if pending_transactions %}
-{% for transaction in pending_transactions %}
-<div class="card">
-  <div class="card-body">
-    <div class="card-title">
-      <h3>${{ transaction.amount }}</h3>
-    </div>
-    <div class="card-text">
-      <p>type: {{ transaction.send_request }}</p>
-      {% if transaction.note %}
-      <p>note:</p>
-      <div class="card">
-        <p> {{ transaction.note|escape|linebreaks }}</p>
-      </div>
-      {% endif %}
-      {% if transaction.status == "pending" %}
-        {% if transaction.last_sent_by != user %}
-        <a href="{% url 'transactions:edit_transaction' transaction.id %}">confirm or deny</a>
+<div class="row">
+  <div class="col-sm-7">
+    <div class="card border-0">
+      <div class="card-body px-2">
+        {% if lessons %}
+        <div class="card-title">
+          <h2>Upcoming Lessons</h2>
+        </div>
+        <div class="container">
+          <div class="card-text pt-2">
+            {% for lesson in lessons %}
+            <div class="pb-2">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <h3>{{ lesson.name }}</h3>
+                  </div>
+                  <div class="card-subtitle">
+                    <h6>{{ lesson.lesson_datetime.date }} at {{ lesson.lesson_datetime.time }}</h6>
+                  </div>
+                </div>
+                <div class="card-body py-2">
+                  <div class="card-text">
+                    {% if user == lesson.teacher %}
+                    <p class="mb-1">students: </p>
+                    <ul class="mb-0">
+                      {% for student in lesson.students.all %}
+                      <li>
+                        <p>{{ student.username }}</p>
+                      </li>
+                      {% endfor %}
+                    </ul> 
+                    {% else %}
+                    <p>teacher: {{ lesson.teacher }}</p>
+                    <p class="mb-1">other students: </p>
+                    <ul class="mb-0">
+                      {% for student in lesson.students.all %}
+                      {% if student != user %}
+                      <li>
+                        <p>{{ student.username }}</p>
+                      </li>
+                      {% endif %}
+                      {% endfor %}
+                    </ul> 
+                    {% endif %}  
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
         {% else %}
-        <p>waiting for confirmation...</p>
+        <div class="card-body px-2">
+          <div class="card-text">
+            <h3>no upcoming lessons</h3>
+          </div>
+        </div>
         {% endif %}
-      {% elif transaction.status == "confirmed" %}
-      <p>confirmed.</p>
-      {% else %}
-      <p>denied.</p>
-      {% endif %}
+
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-5">
+    <div class="card border-0">
+      <div class="card-body px-2">
+        {% if pending_transactions %}
+        <div class="card-title">
+          <h2>Pending Transactions</h2>
+        </div>
+        <div class="container">
+          <div class="card-text pt-2">
+            {% for transaction in pending_transactions %}
+            <div class="pb-2">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <h3>${{ transaction.amount }}</h3>
+                  </div>
+                  <div class="card-subtitle">
+                    {% if transaction.send_request == "request" %}
+                    <p class="mb-0">requested {% if transaction.sender == user %} from {% else %} by {% endif %} {{ transaction.receiver }}</p>
+                    {% else %}
+                    <p class="mb-0">sent {% if transaction.sender == user %} to {% else %} by {% endif %} {{ transaction.receiver }}</p>
+                    {% endif %}
+                  </div>
+                  {% if transaction.status == "pending" and transaction.last_sent_by != user %}
+                  <form action="{% url 'transactions:index' transaction.id %}" method="POST">
+                    {% csrf_token %}
+                    <input class="btn btn-outline-dark" type="submit" name="confirm_student" value="Confirm">
+                    <a href="{% url 'transactions:edit_transaction' transaction.id %}" class="btn btn-outline-dark">Edit</a>
+                  </form>
+                  {% endif %}
+                </div>
+                {% if transaction.note %}
+                <div class="card-body py-1">
+                  <div class="card-text">
+                    <p class="my-2">{{ transaction.note|escape|linebreaksbr }}</p>
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% else %}
+        <div class="card-text">
+          <h3>No Pending Transactions</h3>
+        </div>
+        {% endif %}
+      </div>
     </div>
   </div>
 </div>
-{% endfor %}
-{% else %}
-<p>no transactions awaiting confirmation</p>
-{% endif %}
-
-{% if lessons %}
-{% for lesson in lessons %}
-<div class="card">
-  <div class="card-body">
-    <div class="card-title">
-      <h3>{{ lesson.name }}</h3>
-    </div>
-    <div class="card-text">
-      {% if user != lesson.teacher %}
-      <p>teacher: {{ lesson.teacher }}</p>
-      {% endif %}
-      <p>students: </p>
-      <ul>
-        {% for student in lesson.students.all %}
-        <li>
-          <p>{{ student.username }}</p>
-        </li>
-        {% endfor %}
-      </ul>
-
-      <p>date and time: {{ lesson.lesson_datetime }}</p>
-
-      {% if lesson.amount %}
-      <p>amount: ${{ lesson.amount }} / student</p>
-      {% endif %}
-
-      <p>repeat: {{ lesson.repeat }}</p>
-      {% if lesson.repeat != lesson.RepeatChoices.NEVER %}
-      <p>start date: {{ lesson.start_date}}</p>
-      <p>end date: {{ lesson.end_date }}</p>
-      {% endif %}
-    </div>
-  </div>
-</div>
-{% endfor %}
-{% else %}
-<p>no upcoming lessons</p>
-{% endif %}
 
 {% else %}
-<a href="{% url 'users:sign_up' %}">sign up</a>
-<br>
-<a href="{% url 'users:login' %}">login</a>
+<a href="{% url 'users:sign_up' %}" class="btn btn-outline-dark">sign up</a>
+<a href="{% url 'users:login' %}" class="btn btn-outline-dark">login</a>
 {% endif %}
 {% endblock content %}
