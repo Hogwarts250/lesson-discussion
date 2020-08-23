@@ -25,7 +25,11 @@ class LessonForm(forms.ModelForm):
         to_field_name=None,
     )
 
+    lesson_datetime = forms.DateTimeField(
+        input_formats=["%d/%m/%Y %H:%M"],
+    )
     end_date = forms.DateField(
+        input_formats=["%d/%m/%Y"],
         required=False,
     )
 
