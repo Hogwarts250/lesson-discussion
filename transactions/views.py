@@ -1,7 +1,10 @@
+from math import ceil
+
 from django.shortcuts import render, reverse
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.db.models import Q
+from django.utils import timezone
 
 from .forms import TransactionForm, EditTransactionForm
 from .models import TransactionRecord, Transaction
@@ -21,24 +24,42 @@ def get_create_transaction_record(user, other):
 
     return transaction_record
 
-def confirm_deny_model(request, model_instance, return_namespace, *args):
+def confirm_deny_model(request, model_instance, **kwargs):
     post_keys = "".join([k for k in request.POST.keys() if k != "csrfmiddlewaretoken"])
     if "confirm" in post_keys:
-        model_instance.set_status_confirmed()
+        model_instance.set_status_confirmed(**kwargs)
+
+    elif "send" in post_keys:
+        model_instance.set_status_sent(**kwargs)
 
     elif "deny" in post_keys:
-        model_instance.set_status_denied()
+        model_instance.set_status_denied(**kwargs)
 
-    return HttpResponseRedirect(reverse(return_namespace, args=args))
+    elif "receive" in post_keys:
+        model_instance.set_status_received(**kwargs)
 
-def index(request):
+def index(request, transaction_id=None):
     current_user = request.user
 
+    if request.method == "POST":
+        transaction = Transaction.objects.get(id=transaction_id)
+        confirm_deny_model(request, transaction, user=current_user)
+
+        return HttpResponseRedirect(reverse("transactions:index"))
+
     if current_user.is_authenticated:
-        lessons = Lesson.objects.filter(Q(teacher=current_user) | Q(students=current_user)).distinct()[:3]
         pending_transactions = Transaction.objects.filter(
             Q(sender=current_user) | Q(receiver=current_user)
-        ).filter(status=Transaction.STATUS.pending).exclude(last_sent_by=current_user).distinct()
+        ).exclude(
+            Q(status=Transaction.STATUS.received) | Q(status=Transaction.STATUS.denied)
+        ).distinct()
+
+        num_lessons = 3 if ceil(len(pending_transactions) / 2) < 3 else ceil(len(pending_transactions) / 2)
+        lessons = Lesson.objects.filter(
+            Q(teacher=current_user) | Q(students=current_user)
+        ).distinct().filter(
+            status=Lesson.StatusChoices.CREATE
+        ).exclude(datetime__lte=timezone .now()).order_by("datetime")[:num_lessons]
 
         context = {"lessons": lessons, "pending_transactions": pending_transactions }
 
@@ -73,6 +94,9 @@ def create_transaction(request):
             )
             transaction.save()
 
+            if form.cleaned_data["send_request"] == transaction.SendRequestChoices.SEND:
+                transaction.set_status_sent(user=current_user)
+
             return HttpResponseRedirect(reverse("transactions:index"))
 
     else:
@@ -89,23 +113,23 @@ def edit_transaction(request, transaction_id):
 
     if request.method == "POST":
         form = EditTransactionForm(instance=transaction, data=request.POST)
-        post_keys = "".join([k for k in request.POST.iterkeys() if k != "csrfmiddlewaretoken"])
+        post_keys = "".join([k for k in request.POST.keys() if k != "csrfmiddlewaretoken"])
         other = transaction.get_other_user(current_user)
 
         if "transaction" in post_keys:
             transaction = Transaction.objects.get(id=transaction_id)
-            confirm_deny_model(request, transaction, "chat_room:room", other.id)
+            confirm_deny_model(request, transaction, user=current_user)
 
         elif form.is_valid():
             form.save()
             transaction.last_sent_by = transaction.get_other_user(transaction.last_sent_by)
             transaction.save()
 
-            return HttpResponseRedirect(reverse("chat_room:room", args=[other.id]))
+        return HttpResponseRedirect(reverse("chat_room:index", args=[other.id]))
 
     else:
         form = EditTransactionForm(instance=transaction)
 
-    context = {"form": form, "transaction_id": transaction_id}
+    context = {"form": form, "transaction_id": transaction_id, "transaction": transaction}
 
     return render(request, "transactions/edit_transaction.html", context)

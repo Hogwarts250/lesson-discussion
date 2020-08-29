@@ -20,7 +20,7 @@
                     <h3>{{ lesson.name }}</h3>
                   </div>
                   <div class="card-subtitle">
-                    <h6>{{ lesson.lesson_datetime.date }} at {{ lesson.lesson_datetime.time }}</h6>
+                    <h6>{{ lesson.datetime.date }} at {{ lesson.datetime.time }}</h6>
                   </div>
                 </div>
                 <div class="card-body py-2">
@@ -56,10 +56,8 @@
         </div>
 
         {% else %}
-        <div class="card-body px-2">
-          <div class="card-text">
-            <h3>no upcoming lessons</h3>
-          </div>
+        <div class="card-text">
+          <h3>No Upcoming Lessons</h3>
         </div>
         {% endif %}
 
@@ -81,19 +79,28 @@
                 <div class="card-header">
                   <div class="card-title">
                     <h3>${{ transaction.amount }}</h3>
+                    {% if transaction.status == "pending" and user != transaction.last_sent_by %}
+                    <a href="{% url 'transactions:edit_transaction' transaction.id %}" class="pl-1">Edit</a> 
+                    {% endif %}
                   </div>
                   <div class="card-subtitle">
                     {% if transaction.send_request == "request" %}
-                    <p class="mb-0">requested {% if transaction.sender == user %} from {% else %} by {% endif %} {{ transaction.receiver }}</p>
+                    <p class="mb-0">Requested {% if transaction.sender == user %} from {{ transaction.receiver }}{% else %} by {{ transaction.sender}}{% endif %}</p>
                     {% else %}
-                    <p class="mb-0">sent {% if transaction.sender == user %} to {% else %} by {% endif %} {{ transaction.receiver }}</p>
+                    <p class="mb-0">Sent {% if transaction.sender == user %} to {{ transaction.receiver }}{% else %} by {{ transaction.sender }}{% endif %}</p>
                     {% endif %}
                   </div>
-                  {% if transaction.status == "pending" and transaction.last_sent_by != user %}
-                  <form action="{% url 'transactions:index' transaction.id %}" method="POST">
+                  {% if transaction.last_sent_by != user %}
+                  <form action="{% url 'transactions:index' transaction.id %}" method="POST" class="pt-2">
                     {% csrf_token %}
-                    <input class="btn btn-outline-dark" type="submit" name="confirm_student" value="Confirm">
-                    <a href="{% url 'transactions:edit_transaction' transaction.id %}" class="btn btn-outline-dark">Edit</a>
+                    {% if transaction.status == "pending" %}
+                    <input class="btn btn-outline-dark" type="submit" name="confirm_transaction" value="Confirm">
+                    <input class="btn btn-outline-dark" type="submit" name="deny_transaction" value="Deny">
+                    {% elif transaction.status == "confirmed" %}
+                    <input class="btn btn-outline-dark" type="submit" name="send_transaction" value="Sent">
+                    {% elif transaction.status == "sent" %}
+                    <input class="btn btn-outline-dark" type="submit" name="receive_transaction" value="Received">
+                    {% endif %}
                   </form>
                   {% endif %}
                 </div>

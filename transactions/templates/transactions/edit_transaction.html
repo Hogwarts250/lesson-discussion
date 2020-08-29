@@ -1,13 +1,27 @@
 {% extends "transactions/base.html" %} {% load bootstrap4 %}
 
 {% block content %}
-<div class="container">  
-  <form action="{% url 'transactions:edit_transaction' transaction_id %}" method="POST">
-    {% csrf_token %} 
-    {% bootstrap_form form %}
-    <input class="btn btn-outline-dark" type="submit" name="edit_transaction" value="Edit">
-    <input class="btn btn-outline-dark" type="submit" name="confirm_transaction" value="Confirm">
-    <input class="btn btn-outline-dark" type="submit" name="deny_transaction" value="Deny">
-  </form>
+<div class="container">
+  {% if transaction.send_request == "request" %}
+  <h3 class="mb-0">Requested {% if transaction.sender == user %} from {% else %} by {% endif %} {{ transaction.receiver }}</h3>
+  {% else %}
+  <h3 class="mb-0">Sent {% if transaction.sender == user %} to {% else %} by {% endif %} {{ transaction.receiver }}</h3>
+  {% endif %}
+  {% if transaction.note %}
+  <p>note:</p>
+  <div class="card">
+  <p> {{ transaction.note|escape|linebreaks }}</p>
+  </div>
+  {% endif %}
+
+  <div class="card p-3">
+    <form action="{% url 'transactions:edit_transaction' transaction_id %}" method="POST">
+      {% csrf_token %} 
+      {% bootstrap_form form %}
+      <input class="btn btn-outline-dark" type="submit" name="confirm_transaction" value="Confirm">
+      <!-- <input class="btn btn-outline-dark" type="submit" name="send_transaction" value="Confirm & Send"> -->
+      <input class="btn btn-outline-dark" type="submit" name="deny_transaction" value="Deny">
+    </form>
+  </div>
 </div>
 {% endblock content %}

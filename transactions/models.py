@@ -5,7 +5,7 @@ from django.db import models
 from django.conf import settings
 from django.core import validators
 
-from lesson_planner.models import Lesson
+from lesson_planner.models import Series
 
 # Create your models here.
 class TransactionRecord(models.Model):
@@ -53,25 +53,46 @@ class Transaction(models.Model):
         validators=[validators.MinValueValidator(0.01)],
         null=True
     )
-    note = models.TextField(null=True, blank=True)
+    note = models.TextField(blank=True, default=None)
 
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, blank=True)
+    series = models.ForeignKey(Series, on_delete=models.CASCADE, null=True, blank=True)
 
-    STATUS = Choices("pending", "confirmed", "denied")
+    STATUS = Choices("pending", "confirmed", "sent", "received", "denied")
     status = fields.StatusField(choices=STATUS, default=STATUS.pending, max_length=10)
-    confirmed_denied_datetime = fields.MonitorField(
+    confirmed_datetime = fields.MonitorField(
         monitor="status",
-        when=[STATUS.confirmed, STATUS.denied],
+        when=STATUS.confirmed,
+        null=True
+    )
+    sent_datetime = fields.MonitorField(
+        monitor="status",
+        when=STATUS.sent,
+        null=True
+    )
+    received_denied_datetime = fields.MonitorField(
+        monitor="status",
+        when=[STATUS.received, STATUS.denied],
         null=True
     )
 
-    def set_status_confirmed(self):
+    def set_status_confirmed(self, **kwargs):
         self.status = self.STATUS.confirmed
         self.save()
 
-    def set_status_denied(self):
+    def set_status_sent(self, **kwargs):
+        self.status = self.STATUS.sent
+        self.last_sent_by = kwargs["user"]
+        self.save()
+
+    def set_status_received(self, **kwargs):
+        self.status = self.STATUS.received
+        self.last_sent_by = kwargs["user"]
+        self.save()
+
+    def set_status_denied(self, **kwargs):
         self.status = self.STATUS.denied
+        self.last_sent_by = kwargs["user"]
         self.save()
 
     def get_other_user(self, user):
-        return self.initial_receiver if user == self.initial_sender else self.initial_sender
+        return self.receiver if user == self.sender else self.sender
