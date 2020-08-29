@@ -5,13 +5,29 @@ from django.db import models
 from django.conf import settings
 
 # Create your models here.
-class Lesson(models.Model):
+class Series(models.Model):
     class RepeatChoices(models.TextChoices):
         NEVER = "never"
         DAILY = "daily"
         WEEKLY = "weekly"
         MONTHLY = "monthly"
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    datetime_created = models.DateTimeField(auto_now_add=True)
+
+    amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    length = models.DurationField(null=True)
+
+    repeat = models.CharField(
+        choices=RepeatChoices.choices,
+        default=RepeatChoices.NEVER,
+        max_length=7,
+    )
+    # start and end dates are inclusive
+    start_datetime = models.DateTimeField(null=True)
+    end_date = models.DateField(null=True, blank=True)
+
+class Lesson(models.Model):
     class StatusChoices(models.TextChoices):
         REQUEST = "request"
         CREATE = "create"
@@ -24,6 +40,7 @@ class Lesson(models.Model):
         default=StatusChoices.CREATE,
         max_length=7,
     )
+    series = models.ForeignKey(Series, on_delete=models.CASCADE, null=True)
 
     name = models.CharField(max_length=50, null=True)
 
@@ -38,18 +55,7 @@ class Lesson(models.Model):
         related_name="students",
     )
 
-    lesson_datetime = models.DateTimeField(null=True)
-    length = models.DurationField(null=True)
-
-    amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-
-    repeat = models.CharField(
-        choices=RepeatChoices.choices,
-        default=RepeatChoices.NEVER,
-        max_length=7,
-    )
-    # end date is inclusive
-    end_date = models.DateField(null=True, blank=True)
+    datetime = models.DateTimeField(null=True)
 
     def set_status_confirmed(self):
         self.status = self.StatusChoices.CREATE

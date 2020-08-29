@@ -9,4 +9,5 @@ urlpatterns = [
     path("m=<str:model_id>", views.index, name="index"),
     path("create/", views.create_lesson, name="create_lesson"),
     path("request/", views.request_lesson, name="request_lesson"),
+    path("edit/m=<str:lesson_id>", views.edit_lesson, name="edit_lesson"),
 ]
