@@ -1,10 +1,67 @@
-{% extends "transactions/base.html" %} {% load bootstrap4 %}
+{% extends "transactions/base.html" %} {% load bootstrap4 %} {% load static %}
 
 {% block content %}
 <form action="{% url 'lesson_planner:create_lesson' %}" method="POST" class="form">
   {% csrf_token %}
-  {% bootstrap_form lesson_form %}
-  {% bootstrap_form series_form %}
+
+  {{ form.non_field_errors }}
+  <!-- name -->
+  <div class="form-group">
+    {{ form.name.errors }}
+    {{ form.name.label_tag }}
+    <input type="text" class="form-control" name="{{ form.name.html_name }}" placeholder="{{ form.name.label }}" id="{{ form.name.id_for_label }}" title required>
+  </div>
+  <!-- students -->
+  <div class="form-group">
+    {{ form.students.errors }}
+    {{ form.students.label_tag }}
+    <div class="checkbox">
+      {% for student in form.students %}
+      <div class="form-check">  
+        <label class="form-check-label" for="{{ student.id_for_label }}">
+          <input id="{{ student.id_for_label }}" class="form-check-input" name="{{ form.students.html_name }}" type="checkbox" value="{{ student.data.value }}">
+          {{ student.choice_label }}
+        </label>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <!-- amount -->
+  <div class="form-group">
+    {{ form.amount.errors }}
+    {{ form.amount.label_tag }}
+    <input type="number" class="form-control" name="{{ form.amount.html_name }}" placeholder="{{ form.amount.label }}" id="{{ form.amount.id_for_label }}" title required>
+  </div>
+  <!-- start_datetime -->
+  <div class="form-group">
+    {{ form.start_datetime.errors }}
+    {{ form.start_datetime.label_tag }}
+    <input type="text" class="form-control datepicker" name="{{ form.start_datetime.html_name }}" placeholder="{{ form.start_datetime.label }}" id="{{ form.start_datetime.id_for_label }}" title required>
+  </div>
+  <!-- length -->
+  <div class="form-group">
+    {{ form.length.errors }}
+    {{ form.length.label_tag }}
+    <input type="text" class="form-control" name="{{ form.length.html_name }}" placeholder="{{ form.length.label }}" id="{{ form.length.id_for_label }}" title required>
+  </div>
+  <!-- repeat -->
+  <div class="form-group">
+    {{ form.repeat.errors }}
+    {{ form.repeat.label_tag }}
+    <select id="{{ form.repeat.id_for_label }}" class="form-control" name="{{ form.repeat.html_name }}">
+      {% for option in form.repeat %}
+      <option value="{{ option.data.value }}">{{ option.choice_label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <!-- end_date -->
+  <div class="form-group">
+    {{ form.end_date.errors }}
+    {{ form.end_date.label_tag }}
+    <input type="text" class="form-control datepicker" name="{{ form.end_date.html_name }}" placeholder="{{ form.end_date.label }}" id="{{ form.end_date.id_for_label }}" title required>
+  </div>
   <input class="btn btn-outline-success" type="submit" value="Submit">
 </form>
+
+<script type="text/javascript" src="{% static 'js/datepicker.js' %}"></script>
 {% endblock content %}

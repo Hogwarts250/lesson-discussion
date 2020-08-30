@@ -4,42 +4,49 @@
 <a href="{% url 'lesson_planner:create_lesson' %}">create_lesson</a>
 <br>
 <a href="{% url 'lesson_planner:request_lesson' %}">request_lesson</a>
-{% if requested_lessons %}
+{% if requested_series %}
 <p>requested lessons</p>
-{% for lesson in requested_lessons %}
+{% for series in requested_series %}
 <div class="pb-2">
   <div class="card">
     <div class="card-header">
       <div class="card-title">
-        <h3>{{ lesson.name }}</h3>
+        <h3>{{ series.name }}</h3>
       </div>
       <div class="card-subtitle">
-        <h6>{{ lesson.datetime.date }} at {{ lesson.datetime.time }}</h6>
+        <h6>{{ series.start_datetime.date }}{% if series.end_date %} to {{ series.end_date }}{% endif %}</h6>
       </div>
     </div>
     <div class="card-body py-2">
       <div class="card-text">
-        <p>teacher: {{ lesson.teacher }}</p>
+        <p>teacher: {{ series.teacher }}</p>
         <p class="mb-1">other students: </p>
         <ul class="mb-0">
-          {% for student in lesson.students.all %}
+          {% for student in series.students.all %}
           <li>
             <p>{{ student.username }}</p>
           </li>
           {% endfor %}
         </ul>
-        {% if lesson.series.amount %}
-        <p>amount: ${{ lesson.series.amount }} / student</p>
+        {% if series.amount %}
+        <p>amount: ${{ series.amount }} / student</p>
         {% endif %}
 
-        {% if lesson.series.repeat != lesson.RepeatChoices.series.NEVER %}
-        <p>repeat: {{ lesson.series.repeat }}</p>
-        <p>start date: {{ lesson.series.start_date.date }}</p>
-        <p>end date: {{ lesson.series.end_date }}</p>
+        {% if series.repeat != series.RepeatChoices.NEVER %}
+        <p>repeat: {{ series.repeat }}</p>
+        <p>start date: {{ series.start_datetime.date }}</p>
+        <p>end date: {{ series.end_date }}</p>
+        {% else %}
+        <p>date: {{ series.start_datetime.date }}</p>
         {% endif %}
 
         <!-- TODO -->
-        {% if user == lesson.teacher %}
+        {% if user == series.teacher %}
+        <form action="{% url 'lesson_planner:index' series.id %}" method="POST">
+          {% csrf_token %}
+          <input class="btn btn-outline-dark" type="submit" name="confirm_series" value="Accept">
+          <input class="btn btn-outline-dark" type="submit" name="deny_series" value="Deny">
+        </form>
         {% endif %}
       </div>
     </div>
@@ -47,66 +54,79 @@
 </div>
 {% endfor %}
 {% endif %}
-{% if created_lessons %}
+{% if created_series %}
 <p>created lessons</p>
-{% for lesson in created_lessons %}
-<div class="card">
-  <p>{{ lesson.name }}</p>
-
-  <p>teacher: {{ lesson.teacher }}</p>
-  <p>students: </p>
-  <ul>
-    {% for student_status in lesson.studentstatus_set.all %}
-    <li>
-      <p>{{ student_status.student.username }} 
-        {% if student_status.status == "pending" and student_status.student == user %}
-        <form action="{% url 'lesson_planner:index' student_status.id %}" method="POST">
-          {% csrf_token %}
-          <input class="btn" type="submit" name="confirm_student" value="Confirm">
-          <input class="btn" type="submit" name="deny_student" value="Deny">
-        </form>
-        {% else %}
-        <small>{{ student_status.status }}</small>
-        {% endif %}
-      </p>
-    </li>
-    {% endfor %}
-  </ul>
-
-  <p>date and time: {{ lesson.datetime }}</p>
-
-  {% if lesson.series.amount and lesson.series.repeat == lesson.series.RepeatChoices.NEVER %}
-  <p>amount: ${{ lesson.series.amount }} / student</p>
-
-  <div class="container">
-    {% for transaction in lesson.transaction_set.all %}
-    <div class="card">
-      <p>student: {{ transaction.receiver }} </p>
-      <!-- {% if transaction.status == "pending" %}
-        {% if user == transaction.receiver %}
-        <form action="{% url 'lesson_planner:index' transaction.id %}" method="POST">
-          {% csrf_token %}
-          <input class="btn" type="submit" name="confirm_transaction" value="Confirm">
-          <input class="btn" type="submit" name="deny_transaction" value="Deny">
-        </form>
-        {% else %}
-        <p>waiting for confirmation...</p>
-        {% endif %}
-      {% elif transaction.status == "received" %}
-      <p>received.</p>
-      {% else %}
-      <p>denied.</p>
-      {% endif %} -->
+{% for series in created_series %}
+<div class="pb-2">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <h3>{{ series.name }}</h3>
+      </div>
+      <div class="card-subtitle">
+        <h6>{{ series.start_datetime.date }} to {{ series.end_date }}</h6>
+      </div>
     </div>
-    {% endfor %}
-  </div>
-  {% endif %}
 
-  <p>repeat: {{ lesson.series.repeat }}</p>
-  {% if lesson.series.repeat != lesson.series.RepeatChoices.NEVER %}
-  <p>series start date: {{ lesson.series.start_datetime.date }}</p>
-  <p>series end date: {{ lesson.series.end_date }}</p>
-  {% endif %}
+    <div class="card-body py-2">
+      <div class="card-text">
+        <p>teacher: {{ series.teacher }}</p>
+        <p>students: </p>
+        <ul>
+          {% for student in series.students.all %}
+          <li>
+            <p>{{ student.username }} 
+              <!-- {% if student_status.status == "pending" and student_status.student == user %}
+              <form action="{% url 'lesson_planner:index' student_status.id %}" method="POST">
+                {% csrf_token %}
+                <input class="btn" type="submit" name="confirm_student" value="Confirm">
+                <input class="btn" type="submit" name="deny_student" value="Deny">
+              </form>
+              {% else %}
+              <small>{{ student_status.status }}</small>
+              {% endif %} -->
+            </p>
+          </li>
+          {% endfor %}
+        </ul>
+
+        {% if series.amount %}
+        <p>amount: ${{ series.amount }} / student</p>
+        {% endif %}
+
+        {% if series.repeat != series.RepeatChoices.NEVER %}
+        <p>repeat: {{ series.repeat }}</p>
+        <p>start date: {{ series.start_datetime.date }}</p>
+        <p>end date: {{ series.end_date }}</p>
+        {% else %}
+        <p>date: {{ series.start_datetime.date }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- <div class="container">
+      {% for transaction in lesson.transaction_set.all %}
+      <div class="card">
+        <p>student: {{ transaction.receiver }} </p>
+        {% if transaction.status == "pending" %}
+          {% if user == transaction.receiver %}
+          <form action="{% url 'lesson_planner:index' transaction.id %}" method="POST">
+            {% csrf_token %}
+            <input class="btn" type="submit" name="confirm_transaction" value="Confirm">
+            <input class="btn" type="submit" name="deny_transaction" value="Deny">
+          </form>
+          {% else %}
+          <p>waiting for confirmation...</p>
+          {% endif %}
+        {% elif transaction.status == "received" %}
+        <p>received.</p>
+        {% else %}
+        <p>denied.</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div> -->
+  </div>
 </div>
 {% endfor %}
 {% endif %}

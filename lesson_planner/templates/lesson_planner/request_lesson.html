@@ -3,8 +3,7 @@
 {% block content %}
 <form action="{% url 'lesson_planner:request_lesson' %}" method="POST" class="form">
   {% csrf_token %}
-  {% bootstrap_form request_form %}
-  {% bootstrap_form series_form %}
+  {% bootstrap_form form %}
   <input class="btn btn-outline-success" type="submit" value="Submit">
 </form>
 {% endblock content %}

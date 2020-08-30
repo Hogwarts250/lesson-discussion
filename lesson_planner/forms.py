@@ -5,7 +5,14 @@ from django.core.exceptions import ValidationError
 from .models import Lesson, Series
 from users.models import User
 
+
 class SeriesForm(forms.ModelForm):
+    students = forms.ModelMultipleChoiceField(
+        queryset=None,
+        widget=forms.CheckboxSelectMultiple,
+        to_field_name=None,
+    )
+
     start_datetime = forms.DateTimeField(
         input_formats=["%d/%m/%Y %H:%M"],
     )
@@ -16,7 +23,7 @@ class SeriesForm(forms.ModelForm):
 
     class Meta:
         model = Series
-        fields = ["amount", "start_datetime", "length", "repeat", "end_date"]
+        fields = ["name", "teacher", "students", "amount", "start_datetime", "length", "repeat", "end_date"]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -31,29 +38,18 @@ class SeriesForm(forms.ModelForm):
         if repeat != Series.RepeatChoices.NEVER and end_date == None:
             raise ValidationError("An end date is required")
 
+        return cleaned_data
 
-class LessonForm(forms.ModelForm):
-    students = forms.ModelMultipleChoiceField(
-        queryset=None,
-        widget=forms.CheckboxSelectMultiple,
-        to_field_name=None,
-    )
-
-    class Meta:
-        model = Lesson
-        exclude = ["datetime_created", "status", "series", "datetime"]
-
-
-class CreateLessonForm(LessonForm):    
-    class Meta(LessonForm.Meta):
-        exclude = ["datetime_created", "status", "series", "teacher", "datetime"]
+class CreateSeriesForm(SeriesForm):
+    class Meta(SeriesForm.Meta):
+        fields = ["name", "students", "amount", "start_datetime", "length", "repeat", "end_date"]
 
     def __init__(self, user_id, * args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["students"].queryset = User.objects.exclude(id=user_id)
 
 
-class RequestLessonForm(LessonForm):
+class RequestSeriesForm(SeriesForm):
     teacher = forms.ModelChoiceField(
         queryset=None,
         empty_label=None,
@@ -66,10 +62,8 @@ class RequestLessonForm(LessonForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        teacher = cleaned_data.get("teacher")
-        students = cleaned_data.get("students")
 
-        if teacher in students:
+        if cleaned_data.get("teacher") in cleaned_data.get("students"):
             raise ValidationError("The teacher cannot also be a student")
 
         return cleaned_data
