@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-from .models import Lesson, Series
+from .models import Series, Lesson
 from users.models import User
 
 
@@ -12,18 +12,59 @@ class SeriesForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
         to_field_name=None,
     )
+    students.widget.attrs.update({
+        "class": "form-check"
+    })
 
-    start_datetime = forms.DateTimeField(
-        input_formats=["%d/%m/%Y %H:%M"],
+    start_datetime = forms.SplitDateTimeField(
+        label="Start datetime",
+        widget=forms.SplitDateTimeWidget(
+            date_attrs={
+                "class" : "form-control",
+                "data-provide": "datepicker",
+                "placeholder": "placeholder",
+            },
+            date_format="%d/%m/%Y",
+            time_attrs={
+                "class": "form-control",
+                "placeholder": "placeholder",
+            },
+            time_format="%H:%M",
+        )
     )
     end_date = forms.DateField(
         input_formats=["%d/%m/%Y"],
+        label="End date",
         required=False,
     )
+    end_date.widget.attrs.update({
+        "class": "form-control",
+        "data-provide": "datepicker",
+        "placeholder": end_date.label,
+    })
 
     class Meta:
         model = Series
-        fields = ["name", "teacher", "students", "amount", "start_datetime", "length", "repeat", "end_date"]
+        fields = ["name", "students", "amount", "start_datetime", "length", "repeat", "end_date"]
+        widgets = {
+            "name": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "placeholder",
+            }),
+            "amount": forms.NumberInput(attrs={
+                "class": "form-control",
+                "placeholder": "placeholder",
+            }),
+            "length": forms.TimeInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "placeholder",
+                },
+            ),
+                "repeat": forms.Select(attrs={
+                "class": "form-control",
+            }),
+        }
 
     def clean(self):
         cleaned_data = super().clean()
@@ -41,9 +82,6 @@ class SeriesForm(forms.ModelForm):
         return cleaned_data
 
 class CreateSeriesForm(SeriesForm):
-    class Meta(SeriesForm.Meta):
-        fields = ["name", "students", "amount", "start_datetime", "length", "repeat", "end_date"]
-
     def __init__(self, user_id, * args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["students"].queryset = User.objects.exclude(id=user_id)
@@ -54,6 +92,13 @@ class RequestSeriesForm(SeriesForm):
         queryset=None,
         empty_label=None,
     )
+    teacher.widget.attrs.update({
+        "class": "form-control",
+    })
+
+    class Meta(SeriesForm.Meta):
+        fields = SeriesForm.Meta.fields
+        fields.append("teacher")
 
     def __init__(self, user_id, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -67,3 +112,9 @@ class RequestSeriesForm(SeriesForm):
             raise ValidationError("The teacher cannot also be a student")
 
         return cleaned_data
+
+
+class EditLessonForm(forms.ModelForm):
+    class Meta:
+        model = Lesson
+        fields = ["students", "datetime", "length"]

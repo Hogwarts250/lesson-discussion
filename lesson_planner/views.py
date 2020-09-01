@@ -5,9 +5,10 @@ from django.shortcuts import render, reverse
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.db.models import Q
+from django.utils import timezone
 
 from .models import Series, Lesson, StudentStatus
-from .forms import CreateSeriesForm, RequestSeriesForm # CreateLessonForm, RequestLessonForm
+from .forms import CreateSeriesForm, RequestSeriesForm
 from transactions.models import Transaction
 from transactions.views import get_create_transaction_record, confirm_deny_model
 from users.models import User
@@ -28,14 +29,6 @@ def index(request, model_id=None):
             series = series.get(id=model_id)
             confirm_deny_model(request, series)
 
-        elif "student" in post_keys:
-            student_status = StudentStatus.objects.get(id=model_id)
-            confirm_deny_model(request, student_status)
-
-        elif "transaction" in post_keys:
-            transaction = Transaction.objects.get(id=model_id)
-            confirm_deny_model(request, transaction, user=current_user)
-
         return HttpResponseRedirect(reverse("lesson_planner:index"))
 
     context = {"requested_series": requested_series, "created_series": created_series}
@@ -44,7 +37,7 @@ def index(request, model_id=None):
 
 
 @login_required
-def create_lesson(request):
+def create_series(request):
     current_user = request.user
 
     if request.method == "POST":
@@ -52,6 +45,10 @@ def create_lesson(request):
 
         if form.is_valid():
             series = form.save()
+            series.start_datetime = timezone.make_aware(datetime.combine(form.cleaned_data["start_date"], form.cleaned_data["start_time"]))
+            series.teacher = current_user
+            series.save()
+
             students = form.cleaned_data["students"]
 
             if series.repeat == Series.RepeatChoices.NEVER:
@@ -67,13 +64,14 @@ def create_lesson(request):
             else:
                 delta = relativedelta(months=1)
 
-            lesson_datetime = form.cleaned_data["start_datetime"]
+            lesson_datetime = series.start_datetime
             # do-while loop implementation
-            while condition:
+            while True:
                 lesson = Lesson(
                     series=series,
                     teacher=current_user,
                     datetime=lesson_datetime,
+                    length=series.length,
                 )
                 lesson.save()
                 lesson.students.set(students)
@@ -108,11 +106,11 @@ def create_lesson(request):
 
     context = {"form": form}
 
-    return render(request, "lesson_planner/create_lesson.html", context)
+    return render(request, "lesson_planner/create_series.html", context)
 
 
 @login_required
-def request_lesson(request):
+def request_series(request):
     current_user = request.user
 
     if request.method == "POST":
@@ -121,6 +119,7 @@ def request_lesson(request):
         if form.is_valid():
             series = form.save()
             series.status = series.StatusChoices.REQUEST
+            series.start_datetime = datetime.combine(form.cleaned_data["start_date"], form.cleaned_data["start_time"])
             series.save()
 
             return HttpResponseRedirect(reverse("lesson_planner:index"))
@@ -130,7 +129,29 @@ def request_lesson(request):
 
     context = {"form": form}
 
-    return render(request, "lesson_planner/request_lesson.html", context=context)
+    return render(request, "lesson_planner/request_series.html", context=context)
+
+
+@login_required
+def edit_series(request, series_id):
+    current_user = request.user
+    series = Series.objects.get(id=series_id)
+
+    if request.method == "POST":
+        form = CreateSeriesForm(current_user.id, instance=series, data=request.POST)
+
+        if form.is_valid():
+            # TODO: edit relevant fields on all sub-lessons
+            form.save()
+
+            return HttpResponseRedirect(reverse("lesson_planner:index"))
+
+    else:
+        form = CreateSeriesForm(current_user.id, instance=series)
+
+    context = {"form": form, "series_id": series_id}
+
+    return render(request, "lesson_planner/edit_series.html", context)
 
 
 @login_required
@@ -144,7 +165,7 @@ def edit_lesson(request, lesson_id):
         if form.is_valid():
             form.save()
 
-        return HttpResponseRedirect(reverse("lesson_planner:index"))
+            return HttpResponseRedirect(reverse("lesson_planner:index"))
 
     else:
         form = CreateLessonForm(instance=lesson)

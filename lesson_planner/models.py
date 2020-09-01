@@ -86,6 +86,7 @@ class Lesson(models.Model):
     )
 
     datetime = models.DateTimeField(null=True)
+    length = models.DurationField(null=True)
 
 
 class StudentStatus(models.Model):

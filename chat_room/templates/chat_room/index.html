@@ -1,6 +1,7 @@
 {% extends "transactions/base.html" %} {% load bootstrap4 %}
 
 {% block content %}
+<a href="{% url 'transactions:create_transaction' %}">create transaction</a>
 <ul>
   {% for user in users %}
   <li>

@@ -1,9 +1,9 @@
 {% extends "transactions/base.html" %} {% load bootstrap4 %}
 
 {% block content %}
-<a href="{% url 'lesson_planner:create_lesson' %}">create_lesson</a>
+<a href="{% url 'lesson_planner:create_series' %}">create_lesson</a>
 <br>
-<a href="{% url 'lesson_planner:request_lesson' %}">request_lesson</a>
+<a href="{% url 'lesson_planner:request_series' %}">request_lesson</a>
 {% if requested_series %}
 <p>requested lessons</p>
 {% for series in requested_series %}
@@ -40,11 +40,11 @@
         <p>date: {{ series.start_datetime.date }}</p>
         {% endif %}
 
-        <!-- TODO -->
         {% if user == series.teacher %}
         <form action="{% url 'lesson_planner:index' series.id %}" method="POST">
           {% csrf_token %}
           <input class="btn btn-outline-dark" type="submit" name="confirm_series" value="Accept">
+          <a class="btn btn-outline-dark" href="{% url 'lesson_planner:edit_series' series.id %}">Edit</a>
           <input class="btn btn-outline-dark" type="submit" name="deny_series" value="Deny">
         </form>
         {% endif %}
@@ -101,31 +101,16 @@
         {% else %}
         <p>date: {{ series.start_datetime.date }}</p>
         {% endif %}
-      </div>
-    </div>
-
-    <!-- <div class="container">
-      {% for transaction in lesson.transaction_set.all %}
-      <div class="card">
-        <p>student: {{ transaction.receiver }} </p>
-        {% if transaction.status == "pending" %}
-          {% if user == transaction.receiver %}
-          <form action="{% url 'lesson_planner:index' transaction.id %}" method="POST">
-            {% csrf_token %}
-            <input class="btn" type="submit" name="confirm_transaction" value="Confirm">
-            <input class="btn" type="submit" name="deny_transaction" value="Deny">
-          </form>
-          {% else %}
-          <p>waiting for confirmation...</p>
-          {% endif %}
-        {% elif transaction.status == "received" %}
-        <p>received.</p>
-        {% else %}
-        <p>denied.</p>
+        
+        {% if user == series.teacher %}
+        <form action="{% url 'lesson_planner:index' series.id %}" method="POST">
+          {% csrf_token %}
+          <a class="btn btn-outline-dark" href="{% url 'lesson_planner:edit_series' series.id %}">Edit</a>
+          <input class="btn btn-outline-dark" type="submit" name="deny_series" value="Cancel">
+        </form>
         {% endif %}
       </div>
-      {% endfor %}
-    </div> -->
+    </div>
   </div>
 </div>
 {% endfor %}
