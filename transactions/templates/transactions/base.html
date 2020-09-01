@@ -8,7 +8,6 @@
     {% load bootstrap4 %} {% load static %}
     {% bootstrap_css %}
     {% bootstrap_javascript jquery='full' %}
-
     <!-- bootstrap-datepicker -->
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
@@ -30,17 +29,17 @@
             <ul class="navbar-nav ml-auto">
               <li class="nav-item">
                 <a href="{% url 'chat_room:index' %}" class="nav-link">
-                  <img src="{% static 'img/chat-left-text-fill.svg' %}" width="32" height="32"/>
+                  <img src="{% static 'img/credit-card.svg' %}" width="32" height="32"/>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="{% url 'lesson_planner:index' %}" class="nav-link">
-                  <img src="{% static 'img/calendar3.svg' %}" width="32" height="32"/>
+                  <img src="{% static 'img/journals.svg' %}" width="32" height="32"/>
                 </a>
               </li>
               <li class="nav-item">
-                <a href="{% url 'transactions:create_transaction' %}" class="nav-link">
-                  <img src="{% static 'img/plus-square.svg' %}" width="32" height="32"/>
+                <a href="#" class="nav-link">
+                  <img src="{% static 'img/calendar3.svg' %}" width="32" height="32"/>
                 </a>
               </li>
               <li class="nav-item pl-4 my-auto">
