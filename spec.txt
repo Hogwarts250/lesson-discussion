@@ -1,0 +1,15 @@
+lesson tracking app
+
+sharing information
+	time, date, duration
+
+financial transaction
+	reminder
+
+request confirm (protocol)
+
+identify by user-to-user interactions
+easy to sort into different categories
+
+
+name - Play and Pay

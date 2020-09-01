@@ -1,0 +1,10 @@
+{% extends "transactions/base.html" %} {% load bootstrap4 %}
+
+{% block content %}
+<form action="{% url 'lesson_planner:edit_series' series_id %}" method="POST" class="form">
+  {% csrf_token %}
+
+  {% bootstrap_form form %}
+  <input class="btn btn-outline-success" type="submit" value="Submit">
+</form>
+{% endblock content %}

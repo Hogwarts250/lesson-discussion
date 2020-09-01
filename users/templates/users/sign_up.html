@@ -1,0 +1,9 @@
+{% extends "transactions/base.html" %} {% load bootstrap4 %}
+
+{% block content %}
+<form action="{% url 'users:sign_up' %}" method="POST" class="form">
+  {% csrf_token %}
+  {% bootstrap_form form %}
+  <input class="btn btn-outline-success" type="submit" value="Submit">
+</form>
+{% endblock content %}

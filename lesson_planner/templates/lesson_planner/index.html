@@ -1,0 +1,118 @@
+{% extends "transactions/base.html" %} {% load bootstrap4 %}
+
+{% block content %}
+<a href="{% url 'lesson_planner:create_series' %}">create_lesson</a>
+<br>
+<a href="{% url 'lesson_planner:request_series' %}">request_lesson</a>
+{% if requested_series %}
+<p>requested lessons</p>
+{% for series in requested_series %}
+<div class="pb-2">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <h3>{{ series.name }}</h3>
+      </div>
+      <div class="card-subtitle">
+        <h6>{{ series.start_datetime.date }}{% if series.end_date %} to {{ series.end_date }}{% endif %}</h6>
+      </div>
+    </div>
+    <div class="card-body py-2">
+      <div class="card-text">
+        <p>teacher: {{ series.teacher }}</p>
+        <p class="mb-1">other students: </p>
+        <ul class="mb-0">
+          {% for student in series.students.all %}
+          <li>
+            <p>{{ student.username }}</p>
+          </li>
+          {% endfor %}
+        </ul>
+        {% if series.amount %}
+        <p>amount: ${{ series.amount }} / student</p>
+        {% endif %}
+
+        {% if series.repeat != series.RepeatChoices.NEVER %}
+        <p>repeat: {{ series.repeat }}</p>
+        <p>start date: {{ series.start_datetime.date }}</p>
+        <p>end date: {{ series.end_date }}</p>
+        {% else %}
+        <p>date: {{ series.start_datetime.date }}</p>
+        {% endif %}
+
+        {% if user == series.teacher %}
+        <form action="{% url 'lesson_planner:index' series.id %}" method="POST">
+          {% csrf_token %}
+          <input class="btn btn-outline-dark" type="submit" name="confirm_series" value="Accept">
+          <a class="btn btn-outline-dark" href="{% url 'lesson_planner:edit_series' series.id %}">Edit</a>
+          <input class="btn btn-outline-dark" type="submit" name="deny_series" value="Deny">
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+{% if created_series %}
+<p>created lessons</p>
+{% for series in created_series %}
+<div class="pb-2">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <h3>{{ series.name }}</h3>
+      </div>
+      <div class="card-subtitle">
+        <h6>{{ series.start_datetime.date }} to {{ series.end_date }}</h6>
+      </div>
+    </div>
+
+    <div class="card-body py-2">
+      <div class="card-text">
+        <p>teacher: {{ series.teacher }}</p>
+        <p>students: </p>
+        <ul>
+          {% for student in series.students.all %}
+          <li>
+            <p>{{ student.username }} 
+              <!-- {% if student_status.status == "pending" and student_status.student == user %}
+              <form action="{% url 'lesson_planner:index' student_status.id %}" method="POST">
+                {% csrf_token %}
+                <input class="btn" type="submit" name="confirm_student" value="Confirm">
+                <input class="btn" type="submit" name="deny_student" value="Deny">
+              </form>
+              {% else %}
+              <small>{{ student_status.status }}</small>
+              {% endif %} -->
+            </p>
+          </li>
+          {% endfor %}
+        </ul>
+
+        {% if series.amount %}
+        <p>amount: ${{ series.amount }} / student</p>
+        {% endif %}
+
+        {% if series.repeat != series.RepeatChoices.NEVER %}
+        <p>repeat: {{ series.repeat }}</p>
+        <p>start date: {{ series.start_datetime.date }}</p>
+        <p>end date: {{ series.end_date }}</p>
+        {% else %}
+        <p>date: {{ series.start_datetime.date }}</p>
+        {% endif %}
+        
+        {% if user == series.teacher %}
+        <form action="{% url 'lesson_planner:index' series.id %}" method="POST">
+          {% csrf_token %}
+          <a class="btn btn-outline-dark" href="{% url 'lesson_planner:edit_series' series.id %}">Edit</a>
+          <input class="btn btn-outline-dark" type="submit" name="deny_series" value="Cancel">
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+{% endblock content %}

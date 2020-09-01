@@ -1,0 +1,18 @@
+{% extends "transactions/base.html" %} {% load bootstrap4 %} {% load static %}
+
+{% block content %}
+<form action="{% url 'lesson_planner:request_series' %}" method="POST" class="form">
+  {% csrf_token %}
+
+  {% for field in form %}
+  <div class="form-group">
+    {{ field.label_tag }}
+    {{ field }}
+    {{ field.errors }}
+  </div>
+  {% endfor %}
+  <input class="btn btn-outline-success" type="submit" value="Submit">
+</form>
+
+<script type="text/javascript" src="{% static 'js/datepicker.js' %}"></script>
+{% endblock content %}

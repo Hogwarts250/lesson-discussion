@@ -239,3 +239,11 @@ dist
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
+
+### VS Code ###
+# Workspace settings
+*.code-workspace
+
+### VS Code ###
+# Settings and configuration files
+.vscode/
